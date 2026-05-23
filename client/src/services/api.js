@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-/** Production Render API — baseURL includes /api; paths must NOT repeat it */
-export const PRODUCTION_API_BASE_URL =
+const PRODUCTION_API_BASE_URL =
   'https://elite-hire-backend-78w6.onrender.com/api';
 
 const normalizeBaseUrl = (url) => {
@@ -9,10 +8,7 @@ const normalizeBaseUrl = (url) => {
   return url.replace(/\/+$/, '');
 };
 
-/**
- * Strip leading /api from request paths when baseURL already ends with /api.
- * Prevents https://host/api/api/auth/login (404).
- */
+/** Strip duplicate /api prefix when baseURL already ends with /api */
 export const normalizeRequestPath = (url) => {
   if (!url || typeof url !== 'string') return url;
   return url.replace(/^\/api(?=\/|$)/, '') || '/';
@@ -23,20 +19,19 @@ const resolveApiBaseUrl = () => {
   if (fromEnv) {
     return normalizeBaseUrl(fromEnv);
   }
-  if (import.meta.env.PROD) {
-    return PRODUCTION_API_BASE_URL;
+  if (import.meta.env.DEV) {
+    return 'http://localhost:5000/api';
   }
-  return 'http://localhost:5000/api';
+  return PRODUCTION_API_BASE_URL;
 };
 
-const API_URL = resolveApiBaseUrl();
-
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: resolveApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
   timeout: 30000,
+  withCredentials: true,
 });
 
 api.interceptors.request.use(
