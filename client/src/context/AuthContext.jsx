@@ -14,6 +14,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkUserLoggedIn = () => {
       const storedUserInfo = localStorage.getItem('userInfo');
+
       if (storedUserInfo) {
         try {
           const parsedUser = JSON.parse(storedUserInfo);
@@ -23,6 +24,7 @@ export const AuthProvider = ({ children }) => {
           localStorage.removeItem('userInfo');
         }
       }
+
       setLoading(false);
     };
 
@@ -32,24 +34,39 @@ export const AuthProvider = ({ children }) => {
   // Login handler
   const login = async (email, password) => {
     setLoading(true);
+
     try {
-      const { data } = await api.post('/auth/login', { email, password });
+      const { data } = await api.post('/api/auth/login', {
+        email,
+        password,
+      });
+
       setUser(data);
+
       localStorage.setItem('userInfo', JSON.stringify(data));
+
       toast.success(`Welcome back, ${data.name}!`, {
         position: 'top-right',
         autoClose: 3000,
-        theme: 'light'
+        theme: 'light',
       });
+
       navigate('/dashboard');
+
       return { success: true };
     } catch (error) {
-      const errorMsg = error.response?.data?.message || 'Login failed. Please check credentials.';
+      console.error('Login Error:', error);
+
+      const errorMsg =
+        error.response?.data?.message ||
+        'Login failed. Please check credentials.';
+
       toast.error(errorMsg, {
         position: 'top-right',
         autoClose: 4000,
-        theme: 'light'
+        theme: 'light',
       });
+
       return { success: false, error: errorMsg };
     } finally {
       setLoading(false);
@@ -59,23 +76,39 @@ export const AuthProvider = ({ children }) => {
   // Register handler
   const register = async (name, email, password) => {
     setLoading(true);
+
     try {
-      await api.post('/auth/register', { name, email, password });
-      
-      toast.success(`Registration successful! Your account is pending administrator approval. Please login once approved.`, {
-        position: 'top-right',
-        autoClose: 6000,
-        theme: 'light'
+      await api.post('/api/auth/register', {
+        name,
+        email,
+        password,
       });
+
+      toast.success(
+        'Registration successful! Your account is pending administrator approval. Please login once approved.',
+        {
+          position: 'top-right',
+          autoClose: 6000,
+          theme: 'light',
+        }
+      );
+
       navigate('/login');
+
       return { success: true };
     } catch (error) {
-      const errorMsg = error.response?.data?.message || 'Registration failed. Try again.';
+      console.error('Register Error:', error);
+
+      const errorMsg =
+        error.response?.data?.message ||
+        'Registration failed. Try again.';
+
       toast.error(errorMsg, {
         position: 'top-right',
         autoClose: 4000,
-        theme: 'light'
+        theme: 'light',
       });
+
       return { success: false, error: errorMsg };
     } finally {
       setLoading(false);
@@ -85,12 +118,15 @@ export const AuthProvider = ({ children }) => {
   // Logout handler
   const logout = () => {
     localStorage.removeItem('userInfo');
+
     setUser(null);
+
     toast.info('Logged out successfully.', {
       position: 'top-right',
       autoClose: 2000,
-      theme: 'light'
+      theme: 'light',
     });
+
     navigate('/login');
   };
 
@@ -102,7 +138,7 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         logout,
-        isAuthenticated: !!user
+        isAuthenticated: !!user,
       }}
     >
       {children}
