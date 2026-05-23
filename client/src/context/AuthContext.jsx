@@ -8,9 +8,10 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
   const navigate = useNavigate();
 
-  // Load user data on startup
+  // Load user from localStorage
   useEffect(() => {
     const checkUserLoggedIn = () => {
       const storedUserInfo = localStorage.getItem('userInfo');
@@ -31,12 +32,12 @@ export const AuthProvider = ({ children }) => {
     checkUserLoggedIn();
   }, []);
 
-  // Login handler
+  // Login
   const login = async (email, password) => {
     setLoading(true);
 
     try {
-      const { data } = await api.post('/api/auth/login', {
+      const { data } = await api.post('/auth/login', {
         email,
         password,
       });
@@ -67,28 +68,31 @@ export const AuthProvider = ({ children }) => {
         theme: 'light',
       });
 
-      return { success: false, error: errorMsg };
+      return {
+        success: false,
+        error: errorMsg,
+      };
     } finally {
       setLoading(false);
     }
   };
 
-  // Register handler
+  // Register
   const register = async (name, email, password) => {
     setLoading(true);
 
     try {
-      await api.post('/api/auth/register', {
+      await api.post('/auth/register', {
         name,
         email,
         password,
       });
 
       toast.success(
-        'Registration successful! Your account is pending administrator approval. Please login once approved.',
+        'Registration successful! Your account is pending administrator approval.',
         {
           position: 'top-right',
-          autoClose: 6000,
+          autoClose: 5000,
           theme: 'light',
         }
       );
@@ -109,13 +113,16 @@ export const AuthProvider = ({ children }) => {
         theme: 'light',
       });
 
-      return { success: false, error: errorMsg };
+      return {
+        success: false,
+        error: errorMsg,
+      };
     } finally {
       setLoading(false);
     }
   };
 
-  // Logout handler
+  // Logout
   const logout = () => {
     localStorage.removeItem('userInfo');
 
