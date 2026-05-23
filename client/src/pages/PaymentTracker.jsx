@@ -19,6 +19,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import api from '../services/api';
+import { API_PATHS } from '../constants/apiPaths';
 import Modal from '../components/Modal';
 import Spinner from '../components/Spinner';
 import { exportPaymentsToExcel } from '../utils/exportPaymentExcel';
@@ -117,7 +118,7 @@ const PaymentTracker = () => {
 
   const fetchSummary = async (pageOverride) => {
     try {
-      const { data } = await api.get('/payment-tracker/summary', {
+      const { data } = await api.get(API_PATHS.paymentTracker.summary, {
         params: buildApiParams(pageOverride),
       });
       setSummary(data);
@@ -129,7 +130,7 @@ const PaymentTracker = () => {
   const fetchRecords = async (pageOverride) => {
     setLoading(true);
     try {
-      const { data } = await api.get('/payment-tracker', {
+      const { data } = await api.get(API_PATHS.paymentTracker.list, {
         params: buildApiParams(pageOverride),
       });
       setRecords(data.records || []);
@@ -245,7 +246,7 @@ const PaymentTracker = () => {
 
     try {
       if (activeRecord) {
-        await api.put(`/payment-tracker/${activeRecord._id}`, {
+        await api.put(API_PATHS.paymentTracker.detail(activeRecord._id), {
           candidateName: formData.candidateName.trim(),
           idNumber: formData.idNumber.trim(),
           contactNumber: formData.contactNumber,
@@ -254,7 +255,7 @@ const PaymentTracker = () => {
 
         const newPay = Number(formData.newPaymentAmount);
         if (formData.newPaymentAmount !== '' && newPay > 0) {
-          await api.post(`/payment-tracker/${activeRecord._id}/payments`, {
+          await api.post(API_PATHS.paymentTracker.payments(activeRecord._id), {
             newPaymentAmount: newPay,
             remarks: formData.remarks.trim(),
           });
@@ -270,7 +271,7 @@ const PaymentTracker = () => {
         const initialPaymentAmount =
           formData.initialPaymentAmount === '' ? 0 : Number(formData.initialPaymentAmount);
 
-        await api.post('/payment-tracker', {
+        await api.post(API_PATHS.paymentTracker.list, {
           candidateName: formData.candidateName.trim(),
           idNumber: formData.idNumber.trim(),
           contactNumber: formData.contactNumber,
@@ -297,7 +298,7 @@ const PaymentTracker = () => {
 
   const confirmDelete = async () => {
     try {
-      await api.delete(`/payment-tracker/${activeRecord._id}`);
+      await api.delete(API_PATHS.paymentTracker.detail(activeRecord._id));
       toast.success('Payment record deleted.');
       setIsDeleteOpen(false);
       fetchRecords();
@@ -312,7 +313,7 @@ const PaymentTracker = () => {
     setHistoryLoading(true);
     setIsHistoryOpen(true);
     try {
-      const { data } = await api.get(`/payment-tracker/history/${record._id}`);
+      const { data } = await api.get(API_PATHS.paymentTracker.history(record._id));
       setHistoryList(data);
     } catch {
       toast.error('Could not fetch payment history.');
@@ -328,7 +329,7 @@ const PaymentTracker = () => {
     let pagesToFetch = 1;
 
     do {
-      const { data } = await api.get('/payment-tracker', {
+      const { data } = await api.get(API_PATHS.paymentTracker.list, {
         params: cleanQueryParams({ page: currentPage, limit: pageSize, ...filterParams }),
       });
       allRecords.push(...(data.records || []));

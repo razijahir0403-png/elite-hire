@@ -16,6 +16,7 @@ import {
   Download
 } from 'lucide-react';
 import api from '../services/api';
+import { API_PATHS } from '../constants/apiPaths';
 import Modal from '../components/Modal';
 import Spinner from '../components/Spinner';
 import { exportAnalyticsToExcel } from '../utils/exportAnalyticsExcel';
@@ -76,7 +77,7 @@ const Analytics = () => {
   const fetchRecords = async () => {
     setLoading(true);
     try {
-      const { data } = await api.get('/analytics', {
+      const { data } = await api.get(API_PATHS.analytics.list, {
         params: {
           page,
           limit,
@@ -138,7 +139,7 @@ const Analytics = () => {
     let pagesToFetch = 1;
 
     do {
-      const { data } = await api.get('/analytics', {
+      const { data } = await api.get(API_PATHS.analytics.list, {
         params: {
           page: currentPage,
           limit: pageSize,
@@ -228,12 +229,12 @@ const Analytics = () => {
     try {
       if (activeRecord) {
         // Edit record
-        await api.put(`/analytics/${activeRecord._id}`, formData);
+        await api.put(API_PATHS.analytics.detail(activeRecord._id), formData);
         toast.success('Record modified successfully!');
       } else {
         // Create record: exclude empty idnumber so backend computes the sequential value
         const { idnumber, ...submitData } = formData;
-        await api.post('/analytics', submitData);
+        await api.post(API_PATHS.analytics.list, submitData);
         toast.success('Record created successfully!');
       }
       setIsAddEditOpen(false);
@@ -253,7 +254,7 @@ const Analytics = () => {
   // Delete Candidate record
   const confirmDelete = async () => {
     try {
-      await api.delete(`/analytics/${activeRecord._id}`);
+      await api.delete(API_PATHS.analytics.detail(activeRecord._id));
       toast.success('Record deleted.');
       setIsDeleteOpen(false);
       fetchRecords();
@@ -280,7 +281,7 @@ const Analytics = () => {
       return;
     }
     try {
-      await api.put(`/analytics/update-status/${activeRecord._id}`, statusForm);
+      await api.put(API_PATHS.analytics.updateStatus(activeRecord._id), statusForm);
       toast.success('Status updated!');
       setIsStatusOpen(false);
       fetchRecords();
@@ -295,7 +296,7 @@ const Analytics = () => {
     setHistoryLoading(true);
     setIsHistoryOpen(true);
     try {
-      const { data } = await api.get(`/analytics/history/${record._id}`);
+      const { data } = await api.get(API_PATHS.analytics.history(record._id));
       setHistoryList(data);
     } catch (error) {
       toast.error('Could not fetch status history.');

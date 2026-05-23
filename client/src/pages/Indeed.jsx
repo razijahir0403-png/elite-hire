@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Globe, ExternalLink, RefreshCw } from 'lucide-react';
 import api from '../services/api';
+import { API_PATHS } from '../constants/apiPaths';
 import Spinner from '../components/Spinner';
 import StatusBadge from '../components/StatusBadge';
 
@@ -12,7 +13,7 @@ const Indeed = () => {
     setLoading(true);
     try {
       // Fetch records (limit 100 to filter client-side)
-      const { data } = await api.get('/analytics?limit=100');
+      const { data } = await api.get(`${API_PATHS.analytics.list}?limit=100`);
       const records = data.records || [];
       // Filter records that belong to Indeed (link contains 'indeed')
       const filtered = records.filter(r => 

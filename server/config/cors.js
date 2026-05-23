@@ -25,11 +25,19 @@ const parseOrigins = () => {
   return [...new Set(origins)];
 };
 
+const isVercelOrigin = (origin) => {
+  try {
+    const { hostname } = new URL(origin);
+    return hostname.endsWith('.vercel.app');
+  } catch {
+    return false;
+  }
+};
+
 const corsOptions = {
   origin(origin, callback) {
     const allowedOrigins = parseOrigins();
 
-    // Allow server-to-server, Postman, Render health checks (no Origin header)
     if (!origin) {
       return callback(null, true);
     }
@@ -40,7 +48,14 @@ const corsOptions = {
       return callback(null, true);
     }
 
-    return callback(new Error(`CORS blocked for origin: ${origin}`));
+    if (
+      process.env.CORS_ALLOW_VERCEL === 'true' &&
+      isVercelOrigin(normalized)
+    ) {
+      return callback(null, true);
+    }
+
+    return callback(null, false);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

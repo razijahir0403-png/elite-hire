@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import api from '../services/api';
+import { API_PATHS } from '../constants/apiPaths';
 
 const AuthContext = createContext();
 
@@ -37,7 +38,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
 
     try {
-      const { data } = await api.post('/auth/login', {
+      const { data } = await api.post(API_PATHS.auth.login, {
         email,
         password,
       });
@@ -82,7 +83,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
 
     try {
-      await api.post('/auth/register', {
+      await api.post(API_PATHS.auth.register, {
         name,
         email,
         password,

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Briefcase, Globe, BarChart3, TrendingUp, Users, CheckCircle, Clock } from 'lucide-react';
 import api from '../services/api';
+import { API_PATHS } from '../constants/apiPaths';
 import Spinner from '../components/Spinner';
 import { RECRUITMENT_STATUS } from '../utils/statusMaster';
 
@@ -19,7 +20,7 @@ const Dashboard = () => {
     const fetchStats = async () => {
       try {
         // Fetch a batch of records (e.g., limit 100 to calculate statistics)
-        const { data } = await api.get('/analytics?limit=100');
+        const { data } = await api.get(`${API_PATHS.analytics.list}?limit=100`);
         const records = data.records || [];
         
         const total = records.length;

@@ -23,6 +23,8 @@ services:
         generateValue: true
       - key: CLIENT_URL
         sync: false
+      - key: CORS_ALLOW_VERCEL
+        value: true
       - key: RATE_LIMIT_MAX
         value: 300
       - key: AUTH_RATE_LIMIT_MAX

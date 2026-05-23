@@ -1,23 +1,31 @@
 import axios from 'axios';
 
+/** Production Render API — baseURL includes /api; paths must NOT repeat it */
+export const PRODUCTION_API_BASE_URL =
+  'https://elite-hire-backend-78w6.onrender.com/api';
+
 const normalizeBaseUrl = (url) => {
   if (!url) return url;
   return url.replace(/\/+$/, '');
 };
 
+/**
+ * Strip leading /api from request paths when baseURL already ends with /api.
+ * Prevents https://host/api/api/auth/login (404).
+ */
+export const normalizeRequestPath = (url) => {
+  if (!url || typeof url !== 'string') return url;
+  return url.replace(/^\/api(?=\/|$)/, '') || '/';
+};
+
 const resolveApiBaseUrl = () => {
   const fromEnv = import.meta.env.VITE_API_BASE_URL;
-
   if (fromEnv) {
     return normalizeBaseUrl(fromEnv);
   }
-
-  // Production backend URL
   if (import.meta.env.PROD) {
-    return 'https://elite-hire-backend-78w6.onrender.com/api';
+    return PRODUCTION_API_BASE_URL;
   }
-
-  // Local development
   return 'http://localhost:5000/api';
 };
 
@@ -29,26 +37,23 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
   timeout: 30000,
-  withCredentials: true,
 });
 
-// Request interceptor
 api.interceptors.request.use(
   (config) => {
-    const userInfo = localStorage.getItem('userInfo');
+    if (config.url) {
+      config.url = normalizeRequestPath(config.url);
+    }
 
+    const userInfo = localStorage.getItem('userInfo');
     if (userInfo) {
       try {
-        const parsedUser = JSON.parse(userInfo);
-
-        if (parsedUser.token) {
-          config.headers.Authorization = `Bearer ${parsedUser.token}`;
+        const { token } = JSON.parse(userInfo);
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
         }
       } catch (err) {
-        console.error(
-          'Error parsing user credentials from localStorage:',
-          err
-        );
+        console.error('Error parsing user credentials from localStorage:', err);
       }
     }
 
@@ -57,18 +62,15 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('userInfo');
-
       if (!window.location.pathname.includes('/login')) {
         window.location.href = '/login';
       }
     }
-
     return Promise.reject(error);
   }
 );

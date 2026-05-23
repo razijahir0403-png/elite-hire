@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Users as UsersIcon, ShieldAlert, RefreshCw, Mail, Calendar, KeyRound, UserCheck, UserX } from 'lucide-react';
 import { toast } from 'react-toastify';
 import api from '../services/api';
+import { API_PATHS } from '../constants/apiPaths';
 import Spinner from '../components/Spinner';
 
 const Users = () => {
@@ -18,7 +19,7 @@ const Users = () => {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await api.get('/auth/users');
+      const { data } = await api.get(API_PATHS.users.list);
       setUsersList(data || []);
     } catch (err) {
       console.error('Error fetching users:', err);
@@ -31,7 +32,7 @@ const Users = () => {
   const handleToggleApproval = async (id, currentStatus) => {
     try {
       const targetStatus = !currentStatus;
-      const { data } = await api.put(`/auth/users/${id}/approve`, { isApproved: targetStatus });
+      const { data } = await api.put(API_PATHS.users.approve(id), { isApproved: targetStatus });
       toast.success(data.message || `User status updated successfully.`, {
         position: 'top-right',
         autoClose: 3000,
